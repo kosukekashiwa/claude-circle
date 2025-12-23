@@ -3,7 +3,7 @@ import { RotateCcw } from "lucide-react";
 import "./App.css";
 
 export default function PerfectCircleGame() {
-  const canvasRef = useRef(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [points, setPoints] = useState([]);
   const [score, setScore] = useState(null);
@@ -14,37 +14,52 @@ export default function PerfectCircleGame() {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    ctx.fillStyle = "#f8fafc";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (ctx) {
+      ctx.fillStyle = "#f8fafc";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
   }, []);
 
-  const startDrawing = (e) => {
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
     const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     setIsDrawing(true);
-    setPoints([{ x, y }]);
+    setPoints([{ x, y }] as never);
     setScore(null);
     setFeedback("");
 
     const ctx = canvas.getContext("2d");
+
+    if (!ctx) return;
+
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
 
-  const draw = (e) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const draw = (e: any) => {
     if (!isDrawing) return;
 
     const canvas = canvasRef.current;
+
+    if (!canvas) return;
+
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
     const ctx = canvas.getContext("2d");
+
+    if (!ctx) return;
+
     ctx.strokeStyle = "#3b82f6";
     ctx.lineWidth = 3;
     ctx.lineCap = "round";
@@ -52,7 +67,7 @@ export default function PerfectCircleGame() {
     ctx.lineTo(x, y);
     ctx.stroke();
 
-    setPoints((prev) => [...prev, { x, y }]);
+    setPoints((prev) => [...prev, { x, y } as never]);
   };
 
   const stopDrawing = () => {
@@ -67,18 +82,27 @@ export default function PerfectCircleGame() {
 
   const calculateScore = () => {
     if (points.length < 20) {
-      setScore(0);
+      setScore(0 as never);
       setFeedback("円が小さすぎます!");
       return;
     }
 
     // 中心点を計算
-    const centerX = points.reduce((sum, p) => sum + p.x, 0) / points.length;
-    const centerY = points.reduce((sum, p) => sum + p.y, 0) / points.length;
+    const centerX =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      points.reduce((sum, p) => sum + (p as any).x, 0) / points.length;
+    const centerY =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      points.reduce((sum, p) => sum + (p as any).y, 0) / points.length;
 
     // 各点から中心までの距離を計算
     const distances = points.map((p) =>
-      Math.sqrt(Math.pow(p.x - centerX, 2) + Math.pow(p.y - centerY, 2))
+      Math.sqrt(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        Math.pow((p as any).x - centerX, 2) +
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          Math.pow((p as any).y - centerY, 2)
+      )
     );
 
     const avgRadius =
@@ -91,8 +115,10 @@ export default function PerfectCircleGame() {
     const stdDev = Math.sqrt(variance);
 
     // 開始点と終了点の距離（閉じているか）
-    const firstPoint = points[0];
-    const lastPoint = points[points.length - 1];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const firstPoint: any = points[0];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lastPoint: any = points[points.length - 1];
     const closingDistance = Math.sqrt(
       Math.pow(lastPoint.x - firstPoint.x, 2) +
         Math.pow(lastPoint.y - firstPoint.y, 2)
@@ -105,7 +131,7 @@ export default function PerfectCircleGame() {
     const finalScore = Math.round(uniformityScore * 0.7 + closingScore * 0.3);
     const clampedScore = Math.min(100, Math.max(0, finalScore));
 
-    setScore(clampedScore);
+    setScore(clampedScore as never);
 
     // フィードバック
     if (clampedScore >= 95) {
@@ -122,7 +148,11 @@ export default function PerfectCircleGame() {
 
     // 完璧な円を描画
     const canvas = canvasRef.current;
+    if (!canvas) return;
+
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     ctx.strokeStyle = "#10b981";
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
@@ -137,7 +167,9 @@ export default function PerfectCircleGame() {
     setScore(null);
     setFeedback("");
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    if (!ctx) return;
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
@@ -190,7 +222,7 @@ export default function PerfectCircleGame() {
 
         <button
           onClick={reset}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-black font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
         >
           <RotateCcw size={20} />
           もう一度挑戦
